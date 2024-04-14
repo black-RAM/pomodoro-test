@@ -37,10 +37,11 @@ Display.propTypes = {
   dateTime: PropTypes.instanceOf(Date)
 }
 
-const Controls = ({toggler, resetter}) => {
+const Controls = ({toggler, resetter, restorer}) => {
   return (
     <section>
       <button type="button" id="reset" onClick={resetter}>Reset</button>
+      <button type="button" id="restart" onClick={restorer}>Restart</button>
       <button type="button" id="start_stop" onClick={toggler}>Start/Stop</button>
     </section>
   )
@@ -49,6 +50,7 @@ const Controls = ({toggler, resetter}) => {
 Controls.propTypes = {
   toggler: PropTypes.func,
   resetter: PropTypes.func,
+  restorer: PropTypes.func
 }
 
 export { Input, Display, Controls }

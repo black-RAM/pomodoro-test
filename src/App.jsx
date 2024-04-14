@@ -2,10 +2,14 @@ import { Input, Display, Controls } from "./Content"
 import { useState, useEffect, useRef } from "react"
 
 function Clock() {
-  const [settings, calibrate] = useState({
-    sessionLength: 25,
-    breakLength: 5,
-  })
+  const defaultSetting =  () => {
+    return {
+      sessionLength: 25,
+      breakLength: 5,
+    }
+  }
+
+  const [settings, calibrate] = useState(defaultSetting)
 
   const [running, setRunning] = useState({
     time: new Date(),
@@ -76,6 +80,10 @@ function Clock() {
     }
   }
 
+  const resetClock = () => {
+    calibrate(defaultSetting)
+  }
+
   const resetTimer = () => {
     clearInterval(intervalID.current)
     setRunning(lastRun => {
@@ -95,7 +103,7 @@ function Clock() {
       <Input factor={"break"} value={settings.breakLength} incrementor={breakIncrement} decrementor={breakDecrement} />
       <Input factor={"session"} value={settings.sessionLength} incrementor={sessionIncrement} decrementor={sessionDecrement} />
       <Display title={running.isSession ? "Session" : "Break"} dateTime={running.time} />
-      <Controls toggler={toggleTimer} resetter={resetTimer} />
+      <Controls toggler={toggleTimer} restorer={resetTimer} resetter={resetClock} />
     </main>
   )
 }
