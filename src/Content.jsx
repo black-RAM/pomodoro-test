@@ -1,12 +1,11 @@
 import PropTypes from "prop-types"
-import { format } from "date-fns"
 
 const Input = ({factor, value, incrementor, decrementor}) => {
   return (
     <form>
       <h2 id={`${factor}-label`} style={{textTransform: "capitalize"}}>{`${factor} length`}</h2>
       <button type="button" id={`${factor}-decrement`} onClick={decrementor}>-</button>
-      <button type="button" id={`${factor}-length`}>{`${value}`}</button>
+      <time id={`${factor}-length`} dateTime={`PT0H${value}M`}>{`${value}`}</time>
       <button type="button" id={`${factor}-increment`} onClick={incrementor}>+</button>
     </form>
   )
@@ -19,11 +18,16 @@ Input.propTypes = {
   decrementor: PropTypes.func,
 }
 
-const Display = ({title, dateTime}) => {
+const Display = ({title, dateTime = new Date()}) => {
+  const parser = (d = new Date()) => {
+    const minutes = String(d.getHours() * 60 + d.getMinutes()).padStart(2, 0)
+    const seconds = String(d.getSeconds()).padStart(2, 0)
+    return minutes + ":" + seconds
+  }
   return (
     <section>
       <h1 id="timer-label">{title}</h1>
-      <time id="time-left">{format(dateTime, "mm:ss")}</time>
+      <time id="time-left" dateTime={dateTime.toTimeString()}>{parser(dateTime)}</time>
     </section>
   )
 }

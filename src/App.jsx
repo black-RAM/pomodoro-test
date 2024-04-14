@@ -65,21 +65,22 @@ function Clock() {
         setRunning(lastRun => {
           return {
             ...lastRun,
-            time: new Date(lastRun.time.getTime() - 1000)
+            time: new Date(lastRun.time.getTime() - 1000),
+            isPaused: false
           }
         })
       }, 1000)
-    } else {
+    } else if(intervalID.current) {
       clearInterval(intervalID.current)
+      setRunning(last => ({...last, isPaused: true}))
     }
-    running.isPaused = !running.isPaused
   }
 
   const resetTimer = () => {
     clearInterval(intervalID.current)
     setRunning(lastRun => {
       const defaultTime = new Date()
-      defaultTime.setMinutes(lastRun.isSession ? settings.sessionLength : settings.breakLength, 0)
+      defaultTime.setHours(0, lastRun.isSession ? settings.sessionLength : settings.breakLength, 0)
       return {
         ...lastRun,
         time: defaultTime
@@ -88,7 +89,6 @@ function Clock() {
   }
 
   useEffect(resetTimer, [settings])
-
 
   return (
     <main>
