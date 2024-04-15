@@ -63,15 +63,31 @@ function Clock() {
     }
   }
 
+  const resetTimer = () => {
+    clearInterval(intervalID.current)
+    setRunning(lastRun => {
+      const defaultTime = new Date()
+      defaultTime.setHours(0, lastRun.isSession ? settings.sessionLength : settings.breakLength, 0)
+      return {...lastRun, time: defaultTime}
+    })
+  }
+
+  useEffect(resetTimer, [settings])
+
   const toggleTimer = () => {
     if(running.isPaused) {
       intervalID.current = setInterval(() => {
         setRunning(lastRun => {
-          return {
-            ...lastRun,
-            time: new Date(lastRun.time.getTime() - 1000),
-            isPaused: false
+          const timeIsLeft = lastRun.time.getMinutes() * 60 + lastRun.time.getSeconds() > 0
+          const newState = {...lastRun, isPaused: false}
+          if(timeIsLeft) {
+            newState.time = new Date(lastRun.time.getTime() - 1000)
+          } else {
+            newState.isSession = !lastRun.isSession
+            resetTimer()
+            toggleTimer()
           }
+          return newState
         })
       }, 1000)
     } else if(intervalID.current) {
@@ -82,22 +98,9 @@ function Clock() {
 
   const resetClock = () => {
     calibrate(defaultSetting)
+    setRunning(last => ({...last, isSession: true}))
   }
-
-  const resetTimer = () => {
-    clearInterval(intervalID.current)
-    setRunning(lastRun => {
-      const defaultTime = new Date()
-      defaultTime.setHours(0, lastRun.isSession ? settings.sessionLength : settings.breakLength, 0)
-      return {
-        ...lastRun,
-        time: defaultTime
-      }
-    })
-  }
-
-  useEffect(resetTimer, [settings])
-
+  
   return (
     <main>
       <Input factor={"break"} value={settings.breakLength} incrementor={breakIncrement} decrementor={breakDecrement} />
