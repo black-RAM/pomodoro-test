@@ -1,4 +1,5 @@
 import PropTypes from "prop-types"
+import { useEffect, useMemo } from "react"
 
 const Input = ({factor, value, incrementor, decrementor}) => {
   return (
@@ -53,4 +54,22 @@ Controls.propTypes = {
   restorer: PropTypes.func
 }
 
-export { Input, Display, Controls }
+const Beeper = ({trigger}) => {
+  const audio = useMemo(() => new Audio("./assets/beep.wav"), [])
+
+  useEffect(() => {
+    audio.play()
+    return () => {
+      audio.pause()
+      audio.currentTime = 0
+    }
+  }, [audio, trigger])
+
+  return <audio src="./assets/beep.wav" id="beep"></audio>
+}
+
+Beeper.propTypes = {
+  trigger: PropTypes.bool
+}
+
+export { Input, Display, Controls, Beeper }

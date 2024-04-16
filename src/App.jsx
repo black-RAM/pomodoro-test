@@ -1,4 +1,4 @@
-import { Input, Display, Controls } from "./Content"
+import { Input, Display, Controls, Beeper } from "./Content"
 import { useState, useEffect, useRef } from "react"
 
 function Clock() {
@@ -107,6 +107,7 @@ function Clock() {
       <Input factor={"session"} value={settings.sessionLength} incrementor={sessionIncrement} decrementor={sessionDecrement} />
       <Display title={running.isSession ? "Session" : "Break"} dateTime={running.time} />
       <Controls toggler={toggleTimer} restorer={resetTimer} resetter={resetClock} />
+      <Beeper trigger={running.isSession} />
     </main>
   )
 }
