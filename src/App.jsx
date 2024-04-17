@@ -1,15 +1,29 @@
 import { Input, Display, Controls, Beeper } from "./Content"
-import { useState, useEffect, useRef } from "react"
+import { useState, useReducer, useEffect, useRef } from "react"
+
+const INCREMENT = "INCREMENT"
+const DECREMENT = "DECREMENT"
+const RESET = "RESET"
+
+const defaultState = Object.freeze({
+  sessionLength: 25,
+  breakLength: 5,
+})
+
+function calibrator(state, action) {
+  if(action.type == INCREMENT && state[action.property] < 60){
+    return {...state, [action.property]: state[action.property] + 1}
+  } else if(action.type == DECREMENT && state[action.property] > 1) {
+    return {...state, [action.property]: state[action.property] - 1}
+  } else if(action.type == RESET) {
+    return defaultState
+  } else {
+    return state
+  }
+}
 
 function Clock() {
-  const defaultSetting =  () => {
-    return {
-      sessionLength: 25,
-      breakLength: 5,
-    }
-  }
-
-  const [settings, calibrate] = useState(defaultSetting)
+  const [settings, calibration] = useReducer(calibrator, defaultState)
 
   const [running, setRunning] = useState({
     time: new Date(),
@@ -19,60 +33,14 @@ function Clock() {
 
   const intervalID = useRef(null)
 
-  const sessionIncrement = () => {
-    if(settings.sessionLength < 60) {
-      calibrate(previous => {
-        return {
-          ...previous,
-          sessionLength: previous.sessionLength + 1,
-        }
-      })
-    }
-  }
-
-  const sessionDecrement = () => {
-    if(settings.sessionLength > 1) {
-      calibrate(previous => {
-        return {
-          ...previous,
-          sessionLength: previous.sessionLength - 1,
-        }
-      })
-    }
-  }
-  
-  const breakIncrement = () => {
-    if(settings.breakLength < 60) {
-      calibrate(previous => {
-        return {
-          ...previous,
-          breakLength: previous.breakLength + 1,
-        }
-      })
-    }
-  }
-  
-  const breakDecrement = () => {
-    if(settings.breakLength > 1) {
-      calibrate(previous => {
-        return {
-          ...previous,
-          breakLength: previous.breakLength - 1,
-        }
-      })
-    }
-  }
-
   const resetTimer = () => {
     clearInterval(intervalID.current)
     setRunning(lastRun => {
-      const defaultTime = new Date()
-      defaultTime.setHours(0, lastRun.isSession ? settings.sessionLength : settings.breakLength, 0)
-      return {...lastRun, time: defaultTime}
+      const startTime = new Date()
+      startTime.setHours(0, lastRun.isSession ? settings.sessionLength : settings.breakLength, 0)
+      return {...lastRun, time: startTime}
     })
   }
-
-  useEffect(resetTimer, [settings])
 
   const toggleTimer = () => {
     if(running.isPaused) {
@@ -97,17 +65,33 @@ function Clock() {
   }
 
   const resetClock = () => {
-    calibrate(defaultSetting)
     setRunning(last => ({...last, isSession: true}))
+    calibration({type: RESET})
   }
+
+  useEffect(resetTimer, [settings])
   
   return (
     <main>
-      <Input factor={"break"} value={settings.breakLength} incrementor={breakIncrement} decrementor={breakDecrement} />
-      <Input factor={"session"} value={settings.sessionLength} incrementor={sessionIncrement} decrementor={sessionDecrement} />
-      <Display title={running.isSession ? "Session" : "Break"} dateTime={running.time} />
-      <Controls toggler={toggleTimer} restorer={resetTimer} resetter={resetClock} />
-      <Beeper trigger={running.isSession} />
+      <Input 
+        factor={"break"} 
+        value={settings.breakLength} 
+        incrementor={() => calibration({type: INCREMENT, property: "breakLength"})} 
+        decrementor={() => calibration({type: DECREMENT, property: "breakLength"})} />
+      <Input 
+        factor={"session"} 
+        value={settings.sessionLength} 
+        incrementor={() => calibration({type: INCREMENT, property: "sessionLength"})} 
+        decrementor={() => calibration({type: DECREMENT, property: "sessionLength"})} />
+      <Display 
+        title={running.isSession ? "Session" : "Break"}  
+        dateTime={running.time} />
+      <Controls 
+        toggler={toggleTimer} 
+        restorer={resetTimer} 
+        resetter={resetClock} />
+      <Beeper 
+        trigger={running.isSession} />
     </main>
   )
 }
