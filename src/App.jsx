@@ -1,5 +1,6 @@
 import { Input, Display, Controls, Beeper } from "./Content"
 import { useState, useReducer, useEffect, useRef } from "react"
+import "./App.scss"
 
 const INCREMENT = "INCREMENT"
 const DECREMENT = "DECREMENT"
@@ -26,7 +27,7 @@ function Clock() {
   const [settings, calibration] = useReducer(calibrator, defaultState)
 
   const [running, setRunning] = useState({
-    time: new Date(),
+    time: new Date(0, 0, 0, 0, settings.sessionLength),
     isSession: true,
     isPaused: true,
   })
@@ -36,9 +37,8 @@ function Clock() {
   const resetTimer = () => {
     clearInterval(intervalID.current)
     setRunning(lastRun => {
-      const startTime = new Date()
-      startTime.setHours(0, lastRun.isSession ? settings.sessionLength : settings.breakLength, 0)
-      return {...lastRun, time: startTime}
+      const initialMinutes = lastRun.isSession ? settings.sessionLength : settings.breakLength
+      return {...lastRun, time: new Date(0, 0, 0, 0, initialMinutes, 0)}
     })
   }
 
@@ -73,23 +73,28 @@ function Clock() {
   
   return (
     <main>
-      <Input 
-        factor={"break"} 
-        value={settings.breakLength} 
-        incrementor={() => calibration({type: INCREMENT, property: "breakLength"})} 
-        decrementor={() => calibration({type: DECREMENT, property: "breakLength"})} />
-      <Input 
-        factor={"session"} 
-        value={settings.sessionLength} 
-        incrementor={() => calibration({type: INCREMENT, property: "sessionLength"})} 
-        decrementor={() => calibration({type: DECREMENT, property: "sessionLength"})} />
-      <Display 
-        title={running.isSession ? "Session" : "Break"}  
-        dateTime={running.time} />
-      <Controls 
-        toggler={toggleTimer} 
-        restorer={resetTimer} 
-        resetter={resetClock} />
+      <div>
+        <Input 
+          factor={"break"} 
+          value={settings.breakLength} 
+          incrementor={() => calibration({type: INCREMENT, property: "breakLength"})} 
+          decrementor={() => calibration({type: DECREMENT, property: "breakLength"})} />
+        <Input 
+          factor={"session"} 
+          value={settings.sessionLength} 
+          incrementor={() => calibration({type: INCREMENT, property: "sessionLength"})} 
+          decrementor={() => calibration({type: DECREMENT, property: "sessionLength"})} />
+      </div>
+      <div>
+        <Display 
+          title={running.isSession ? "Session" : "Break"}  
+          initialMinutes={running.isSession ? settings.sessionLength : settings.breakLength}
+          currentTime={running.time} />
+        <Controls 
+          toggler={toggleTimer} 
+          restorer={resetTimer} 
+          resetter={resetClock} />
+      </div>
       <Beeper 
         trigger={running.isSession} />
     </main>

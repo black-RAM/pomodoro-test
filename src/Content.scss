@@ -1,0 +1,32 @@
+@import "/node_modules/react-circular-progressbar/dist/styles.css";
+
+.centered-children{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.input{
+  .input-header{
+    text-transform: capitalize;
+  }
+  .input-buttons{
+    display: flex;
+  
+    time {
+      @extend .centered-children;
+      transition: width 0.25s ease-out;
+      background-color: #A1C398;
+      color: #FEFDED;
+    }
+  }
+}
+
+#timer-label{
+  font-size: 2em;
+  margin: 0.5em 0;
+}
+
+section {
+  padding: 1em;
+}
